@@ -1,6 +1,8 @@
 package xyz.marsavic.gfxlab.gui.instruments;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -30,8 +32,9 @@ public class InstrumentRenderer extends ObjectInstrument<Element.Output<F1<Resou
 	private final CheckBox chbEnabled;
 	private final Spinner<Integer> spnIFrame;
 	private final Button btnCopyToClipboard;
-	private final TextField txfFileName;
+	//	private final TextField txfFileName;
 	private final Button btnSaveImage;
+	private final Label lblInfo;
 	
 	
 	public InstrumentRenderer(Element.Output<F1<Resource<Matrix<Integer>>, Integer>> outRenderer) {
@@ -41,7 +44,9 @@ public class InstrumentRenderer extends ObjectInstrument<Element.Output<F1<Resou
 		spnIFrame = new Spinner<>();
 		btnCopyToClipboard = new Button(null, new FontIcon(Resources.Ikons.COPY));
 		btnSaveImage = new Button(null, new FontIcon(Resources.Ikons.SAVE));
-		txfFileName = new TextField();
+//		txfFileName = new TextField();
+		Pane separator = new Pane();
+		lblInfo = new Label();
 		
 		spnIFrame.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(-1, Integer.MAX_VALUE));
 		spnIFrame.getValueFactory().setValue(-1);
@@ -54,11 +59,18 @@ public class InstrumentRenderer extends ObjectInstrument<Element.Output<F1<Resou
 				spnIFrame,
 				btnCopyToClipboard,
 				btnSaveImage,
-				txfFileName
+//				txfFileName
+				separator,
+				lblInfo
 		);
+		HBox.setHgrow(separator, Priority.ALWAYS);
+//		HBox.setHgrow(txfFileName, Priority.ALWAYS);
 		
-		HBox.setHgrow(txfFileName, Priority.ALWAYS);
+		controlPanel.setAlignment(Pos.CENTER_LEFT);
+		controlPanel.setPadding(new Insets(8.0));
+		controlPanel.setSpacing(8.0);
 //		controlPanel.setPrefHeight(24);
+		
 		
 		pane = new VBox(imageView, controlPanel);
 		
@@ -72,9 +84,11 @@ public class InstrumentRenderer extends ObjectInstrument<Element.Output<F1<Resou
 	
 	
 	private Future<?> future = null;
-
+	
 	@Override
 	public synchronized void update() {
+		lblInfo.setText(String.format("%.1f", profilerFetch.eventsPerSecond()));
+		
 		if (!chbEnabled.isSelected()) {
 			return;
 		}
@@ -85,13 +99,13 @@ public class InstrumentRenderer extends ObjectInstrument<Element.Output<F1<Resou
 			future = UtilsGL.submitTask(this::fetch);
 		}
 	}
-
+	
 	
 	private final Profiler profilerFetch = UtilsGL.profiler(this, "fetch");
 	private final ResourceManagerMap<Vector, WritableImage> images = new ResourceManagerMap<>(UtilsGL::createWritableImage, null);
 	private int iFrameNext = 0;
 	
-
+	
 	private void fetch() {
 		profilerFetch.enter();
 		

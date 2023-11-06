@@ -38,7 +38,7 @@ public class App extends Application {
 				new InstrumentText(() -> Profiling.infoTextSystem() + Profiling.infoTextProfilers(), 150)
 		);
 		
-		Scene scene = new Scene(panelR.region(), 654, 826);
+		Scene scene = new Scene(panelR.region(), 654, 842);
 		scene.getStylesheets().setAll(Resources.stylesheetURL);
 		
 		primaryStage.getIcons().setAll(Resources.iconsApplication());

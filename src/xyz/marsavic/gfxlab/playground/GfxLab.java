@@ -7,8 +7,8 @@ import xyz.marsavic.functions.F1;
 import xyz.marsavic.geometry.Vector;
 import xyz.marsavic.gfxlab.*;
 import xyz.marsavic.gfxlab.aggregation.EAggregator;
+import xyz.marsavic.gfxlab.graphics3d.raytracing.RaytracerTest;
 import xyz.marsavic.gfxlab.gui.UtilsGL;
-import xyz.marsavic.gfxlab.playground.colorfunctions.Blobs;
 import xyz.marsavic.gfxlab.tonemapping.ColorTransform;
 import xyz.marsavic.gfxlab.tonemapping.colortransforms.Identity;
 import xyz.marsavic.random.RNG;
@@ -30,15 +30,13 @@ public class GfxLab {
 	
 	private void setup2D() {
 		//                       nFrames   width     height
-		var eSize = e(Vec3::new, e(640.0), e(640.0), e(640.0));
-		
+		var eSize = e(Vec3::new, e(300.0), e(640.0), e(640.0));
 		sink =
 				e(Fs::frFrameToneMapping,
 						new EAggregator(
 								e(Fs::aFillFrameColorRandomized,
 										e(Fs::transformedColorFunction,
-//												e(Spirals::new),
-												e(Blobs::new, e(5), e(0.1), e(0.2)),
+												e(RaytracerTest::new),
 												e(TransformationsFromSize.toGeometric, eSize)
 										)
 								),
@@ -105,7 +103,7 @@ class Fs {
 			var r = input.f(mC -> {
 				ColorTransform f = f_ColorTransform_MatrixColor.at(mC);
 				Resource<Matrix<Integer>> rMatI = UtilsGL.matricesInt.borrow(mC.size(), true);
-				rMatI.a(mI -> mI.fill((x, y) -> f.at(mC.get(x, y)).codeClamp()));
+				rMatI.a(mI -> mI.fill((x, y) -> f.at(mC.get(x, y)).code()));
 				return rMatI;
 			});
 			input.release(); // CONSUMING INPUT!!!

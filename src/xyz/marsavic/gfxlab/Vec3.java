@@ -107,17 +107,17 @@ public class Vec3 {
 	}
 	
 	
+	public boolean equals(Vec3 o) {
+		return (o.x() == x()) && (o.y() == y()) && (o.z() == z());
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (o == null) {
 			return false;
 		}
 		if (o instanceof Vec3 vec3) {
-			return
-					(vec3.x() == x()) &&
-					(vec3.y() == y()) &&
-					(vec3.z() == z())
-					;
+			return equals(vec3);
 		} else {
 			return false;
 		}
@@ -310,6 +310,14 @@ public class Vec3 {
 
 	public boolean anyZero() {
 		return (x() == 0) || (y() == 0) || (z() == 0);
+	}
+	
+	public boolean allPositive() {
+		return (x() > 0) && (y() > 0) && (z() > 0);
+	}
+	
+	public boolean allNegative() {
+		return (x() < 0) && (y() < 0) && (z() < 0);
 	}
 	
 	

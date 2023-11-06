@@ -225,6 +225,16 @@ public class Color {
 				(valueToByte(Numeric.clamp(g)) <<  8) |
 				(valueToByte(Numeric.clamp(b))      );
 	}
+
+
+	public int codeOrDefault(int d) {
+		return this.in01() ? code() : d;
+	}
+
+	
+	public int codeOrBlack() {
+		return this.in01() ? code() : 0xFF000000;
+	}
 	
 	
 	@Override
