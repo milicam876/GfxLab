@@ -7,7 +7,9 @@ import xyz.marsavic.functions.F1;
 import xyz.marsavic.geometry.Vector;
 import xyz.marsavic.gfxlab.*;
 import xyz.marsavic.gfxlab.aggregation.EAggregator;
-import xyz.marsavic.gfxlab.graphics3d.raytracing.RaytracerTest;
+import xyz.marsavic.gfxlab.graphics3d.raytracing.Raytracer;
+import xyz.marsavic.gfxlab.graphics3d.raytracing.RaytracerSimple;
+import xyz.marsavic.gfxlab.graphics3d.scenes.SceneTest;
 import xyz.marsavic.gfxlab.gui.UtilsGL;
 import xyz.marsavic.gfxlab.tonemapping.ColorTransform;
 import xyz.marsavic.gfxlab.tonemapping.colortransforms.Identity;
@@ -30,13 +32,15 @@ public class GfxLab {
 	
 	private void setup2D() {
 		//                       nFrames   width     height
-		var eSize = e(Vec3::new, e(300.0), e(640.0), e(640.0));
+		var eSize = e(Vec3::new, e(1.0), e(640.0), e(640.0));
 		sink =
 				e(Fs::frFrameToneMapping,
 						new EAggregator(
 								e(Fs::aFillFrameColorRandomized,
 										e(Fs::transformedColorFunction,
-												e(RaytracerTest::new),
+												e(RaytracerSimple::new,
+														e(SceneTest::new)
+												),
 												e(TransformationsFromSize.toGeometric, eSize)
 										)
 								),

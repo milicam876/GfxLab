@@ -18,9 +18,10 @@ public interface Solid {
 	}
 	
 	
+	/** Is there any hit between afterTime and beforeTime. */
 	default boolean hitBetween(Ray ray, double afterTime, double beforeTime) {
-		double t = firstHit(ray).t();
-		return (afterTime < t) && (t < beforeTime);
+		double t = firstHit(ray, afterTime).t();
+		return t < beforeTime;
 	}
 
 }

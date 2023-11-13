@@ -1,5 +1,6 @@
 package xyz.marsavic.gfxlab.graphics3d;
 
+import xyz.marsavic.geometry.Vector;
 import xyz.marsavic.gfxlab.Vec3;
 
 
@@ -12,16 +13,24 @@ public interface Hit {
 	/** The normal at the hit point. */
 	Vec3 n();
 	
+	/** Surface material at the hit point. */
+	Material material();
+	
+	/** 2D coordinates in the internal coordinate system of the surface. */
+	Vector uv();
+	
 	/** The normalized normal at the point of the hit */
 	default Vec3 n_() {
 		return n().normalized_();
 	}
 	
-
+	
 	default Hit withN(Vec3 n) {
 		return new Hit() {
 			@Override public double   t       () { return Hit.this.t(); }
 			@Override public Vec3     n       () { return n; }
+			@Override public Material material() { return Hit.this.material(); }
+			@Override public Vector   uv      () { return Hit.this.uv(); }
 		};
 	}
 	
@@ -30,13 +39,15 @@ public interface Hit {
 			@Override public double   t       () { return Hit.this.t (); }
 			@Override public Vec3     n       () { return Hit.this.n ().inverse(); }
 			@Override public Vec3     n_      () { return Hit.this.n_().inverse(); }
+			@Override public Vector   uv      () { return Hit.this.uv(); }
+			@Override public Material material() { return Hit.this.material(); }
 		};
 	}
 	
 	
 	// =====================================================================================================
 	
-
+	
 	abstract class RayT implements Hit {
 		private final Ray ray;
 		private final double t;
@@ -64,13 +75,15 @@ public interface Hit {
 		
 		@Override public double   t       () { return t; }
 		@Override public Vec3     n       () { return n; }
+		@Override public Vector   uv      () { return Vector.ZERO; }
+		@Override public Material material() { return Material.BLACK; }
 		
 		
-		public static AtInfinity inLine(Vec3 d, boolean future, boolean in) {
-			// We don't like calling this often, because it creates a new object. In frequently executed code, call one of the "axisAligned" methods
+		public static AtInfinity inLine(Vec3 d, boolean future, boolean goingOut) {
+			// We don't like calling this often, because it can create a new object. In frequently executed code, call one of the "axisAligned" methods.
 			return new AtInfinity(
 					future ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY,
-					in == future ? d : d.inverse()
+					goingOut == future ? d : d.inverse()
 			);
 		}
 		
@@ -82,26 +95,26 @@ public interface Hit {
 		private static final AtInfinity hitAtInfinityZM = new AtInfinity(Double.POSITIVE_INFINITY, Vec3.xyz( 0, 0,-1));
 		private static final AtInfinity hitAtInfinityZP = new AtInfinity(Double.POSITIVE_INFINITY, Vec3.xyz( 0, 0, 1));
 		
-		public static AtInfinity axisAligned(Vec3 d, boolean in) {
-			return in ? axisAlignedIn(d) : axisAlignedOut(d);
+		public static AtInfinity axisAligned(Vec3 d, boolean fromInside) {
+			return fromInside ? axisAlignedGoingOut(d) : axisAlignedGoingIn(d);
 		}
-
-		public static AtInfinity axisAlignedIn(Vec3 d) {
+		
+		public static AtInfinity axisAlignedGoingOut(Vec3 d) {
 			if (d.x() < 0) return hitAtInfinityXM;
 			if (d.x() > 0) return hitAtInfinityXP;
 			if (d.y() < 0) return hitAtInfinityYM;
 			if (d.y() > 0) return hitAtInfinityYP;
 			if (d.z() < 0) return hitAtInfinityZM;
-			               return hitAtInfinityZP;
+			return hitAtInfinityZP;
 		}
-
-		public static AtInfinity axisAlignedOut(Vec3 d) {
+		
+		public static AtInfinity axisAlignedGoingIn(Vec3 d) {
 			if (d.x() < 0) return hitAtInfinityXP;
 			if (d.x() > 0) return hitAtInfinityXM;
 			if (d.y() < 0) return hitAtInfinityYP;
 			if (d.y() > 0) return hitAtInfinityYM;
 			if (d.z() < 0) return hitAtInfinityZP;
-			               return hitAtInfinityZM;
+			return hitAtInfinityZM;
 		}
 		
 	}

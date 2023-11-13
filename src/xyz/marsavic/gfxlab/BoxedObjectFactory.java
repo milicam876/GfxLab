@@ -1,6 +1,5 @@
-package xyz.marsavic.gfxlab.graphics3d;
+package xyz.marsavic.gfxlab;
 
-import xyz.marsavic.gfxlab.Vec3;
 import xyz.marsavic.gfxlab.graphics3d.solids.Box;
 
 

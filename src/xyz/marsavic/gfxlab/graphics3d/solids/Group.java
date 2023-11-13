@@ -6,13 +6,14 @@ import xyz.marsavic.gfxlab.graphics3d.Solid;
 
 import java.util.Collection;
 
+
 public class Group implements Solid {
-	
+
 	private final Solid[] solids;
 	
 	
-	private Group(Solid... solids) {
-		this.solids = solids.clone();
+	private Group(Solid[] solids) {
+		this.solids = solids;
 	}
 	
 	public static Group of(Solid... solids) {
@@ -23,13 +24,14 @@ public class Group implements Solid {
 		return new Group(solids.toArray(Solid[]::new));
 	}
 	
+	
 	@Override
 	public Hit firstHit(Ray ray, double afterTime) {
-		double minT = Double.POSITIVE_INFINITY;
-		Hit minHit = Hit.AtInfinity.axisAlignedOut(ray.d());
+		Hit minHit = Nothing.INSTANCE.firstHit(ray, afterTime);
+		double minT = minHit.t();
 		
-		for (Solid s : solids) {
-			Hit hit = s.firstHit(ray, afterTime);
+		for (Solid solid : solids) {
+			Hit hit = solid.firstHit(ray, afterTime);
 			double t = hit.t();
 			if (t < minT) {
 				minT = t;
@@ -42,12 +44,12 @@ public class Group implements Solid {
 	
 	@Override
 	public boolean hitBetween(Ray ray, double afterTime, double beforeTime) {
-		for (Solid s : solids) {
-			Hit hit = s.firstHit(ray, afterTime);
-			if (hit.t() < beforeTime) {
+		for (Solid solid : solids) {
+			if (solid.firstHit(ray, afterTime).t() < beforeTime) {
 				return true;
 			}
 		}
 		return false;
 	}
+	
 }
