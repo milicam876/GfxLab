@@ -6,12 +6,18 @@ import xyz.marsavic.gfxlab.Color;
 
 
 public record Material (
-		Color diffuse
+		Color diffuse,
+		Color specular,
+		double shininess,
+		Color reflective
 ) implements F1<Material, Vector> {
-	public Material diffuse        (Color  diffuse        ) { return new Material(diffuse); }
+	public Material diffuse        (Color  diffuse   ) { return new Material(diffuse, specular, shininess, reflective); }
+	public Material specular       (Color  specular  ) { return new Material(diffuse, specular, shininess, reflective); }
+	public Material shininess      (double shininess ) { return new Material(diffuse, specular, shininess, reflective); }
+	public Material reflective     (Color  reflective) { return new Material(diffuse, specular, shininess, reflective);}
 
 	
-	public static final Material BLACK   = new Material(Color.BLACK);
+	public static final Material BLACK   = new Material(Color.BLACK, Color.BLACK, 1, Color.BLACK);
 	
 	public static Material matte (Color  c) { return BLACK.diffuse(c); }
 	public static Material matte (double k) { return matte(Color.gray(k)); }
@@ -20,6 +26,8 @@ public record Material (
 	
 	
 	public static final Material DEFAULT = MATTE;
+	
+	public static final Material MIRROR = BLACK.reflective(Color.WHITE);
 	
 	
 	@Override

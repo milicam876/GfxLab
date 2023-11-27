@@ -3,20 +3,18 @@ package xyz.marsavic.gfxlab.aggregation;
 import xyz.marsavic.elements.ElementF;
 import xyz.marsavic.elements.HasOutput;
 import xyz.marsavic.functions.A1;
-import xyz.marsavic.functions.A3;
 import xyz.marsavic.functions.F1;
 import xyz.marsavic.gfxlab.Color;
+import xyz.marsavic.gfxlab.ColorFunction;
 import xyz.marsavic.gfxlab.Matrix;
 import xyz.marsavic.gfxlab.Vec3;
-import xyz.marsavic.gfxlab.aggregation.Aggregator;
-import xyz.marsavic.gfxlab.aggregation.AggregatorFrameLast;
 import xyz.marsavic.reactions.values.EventInvalidated;
 import xyz.marsavic.resources.Resource;
 
 
 public class EAggregator extends ElementF<F1<Resource<Matrix<Color>>, Integer>> {
 	
-	private final Input<A3<Matrix<Color>, Integer, Long>> inAFillFrameColorRandomized;
+	private final Input<ColorFunction> inColorFunction;
 	private final Input<Vec3> inSize;
 	private final Input<Long> inSeed;
 	
@@ -24,8 +22,8 @@ public class EAggregator extends ElementF<F1<Resource<Matrix<Color>>, Integer>> 
 	
 	
 	
-	public EAggregator(HasOutput<A3<Matrix<Color>, Integer, Long>> outAFillFrameColorRandomized, HasOutput<Vec3> outSize, HasOutput<Long> outSeed) {
-		inAFillFrameColorRandomized = new Input<>(outAFillFrameColorRandomized);
+	public EAggregator(HasOutput<ColorFunction> outColorFunction, HasOutput<Vec3> outSize, HasOutput<Long> outSeed) {
+		inColorFunction = new Input<>(outColorFunction);
 		inSize = new Input<>(outSize);
 		inSeed = new Input<>(outSeed);
 		
@@ -40,7 +38,7 @@ public class EAggregator extends ElementF<F1<Resource<Matrix<Color>>, Integer>> 
 	
 	@Override
 	protected void buildItUp() {
-		aggregator = factory.at(inAFillFrameColorRandomized.get(), inSize.get(), inSeed.get());
+		aggregator = factory.at(inColorFunction.get(), inSize.get(), inSeed.get());
 		aggregator.onInvalidated().add(onSampleAdded);
 	}
 	

@@ -1,9 +1,9 @@
 package xyz.marsavic.gfxlab.aggregation;
 
 import xyz.marsavic.functions.A0;
-import xyz.marsavic.functions.A3;
 import xyz.marsavic.geometry.Vector;
 import xyz.marsavic.gfxlab.Color;
+import xyz.marsavic.gfxlab.ColorFunction;
 import xyz.marsavic.gfxlab.Matrix;
 import xyz.marsavic.gfxlab.Vec3;
 import xyz.marsavic.gfxlab.gui.UtilsGL;
@@ -12,22 +12,17 @@ import xyz.marsavic.time.Profiler;
 import xyz.marsavic.utils.Hashing;
 import xyz.marsavic.utils.OnGC;
 import xyz.marsavic.utils.Utils;
-import xyz.marsavic.utils.performance.ArrayIntsSynchronized;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 
 public class AggregatorFrameLast extends Aggregator {
 	
-	private final A3<Matrix<Color>, Integer, Long> aFillFrameColorRandomized;
+	private final ColorFunction colorFunction;
 	private final int nFrames;
 	private final Vector sizeFrame;
 	private final long seed;
 	
 	
-	private int iFrameLast = -1;
+	private int iFrameLast_ = -1;
 	private Aggregate aggregate;
 	private final Profiler profilerRemoveMePls = UtilsGL.profiler(this, "loop");
 	private final A0 aStopLoop;
@@ -36,8 +31,8 @@ public class AggregatorFrameLast extends Aggregator {
 //	private final List<Aggregate> forRelease = Collections.synchronizedList(new ArrayList<>());
 	
 	
-	public AggregatorFrameLast(A3<Matrix<Color>, Integer, Long> aFillFrameColorRandomized, Vec3 size, long seed) {
-		this.aFillFrameColorRandomized = aFillFrameColorRandomized;
+	public AggregatorFrameLast(ColorFunction colorFunction, Vec3 size, long seed) {
+		this.colorFunction = colorFunction;
 		nFrames = (int) size.x();
 		sizeFrame = size.p12();
 		this.seed = seed;
@@ -60,14 +55,11 @@ public class AggregatorFrameLast extends Aggregator {
 	}
 	
 	
-	private void changeAggregate(int iFrame) {
+	private void changeAggregate(int iFrame_) {
 		Aggregate aggregateOld = aggregate;
-		iFrameLast = iFrame;
+		iFrameLast_ = iFrame_;
 		
-		aggregate = new Aggregate(
-				(Matrix<Color> m, Long seedFrame) -> aFillFrameColorRandomized.execute(m, iFrame, seedFrame),
-				sizeFrame, Hashing.mix(seed, iFrame)
-		);
+		aggregate = new Aggregate(colorFunction, iFrame_, sizeFrame, Hashing.mix(seed, iFrame_));
 		
 		if (aggregateOld != null) {
 //			forRelease.add(aggregateOld);
@@ -79,7 +71,7 @@ public class AggregatorFrameLast extends Aggregator {
 	@Override
 	public Resource<Matrix<Color>> rFrame(int iFrame) {
 		iFrame %= nFrames;
-		if (iFrame != iFrameLast) {
+		if (iFrame != iFrameLast_) {
 			changeAggregate(iFrame);
 		}
 		return aggregate.avgAtLeastOne();

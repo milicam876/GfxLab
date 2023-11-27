@@ -84,9 +84,11 @@ public class InstrumentRenderer extends ObjectInstrument<Element.Output<F1<Resou
 	
 	
 	private Future<?> future = null;
+	private final Profiler profilerUpdate = UtilsGL.profiler(this, "update");
 	
 	@Override
 	public synchronized void update() {
+		profilerUpdate.enter();
 		lblInfo.setText(String.format("%.1f", profilerFetch.eventsPerSecond()));
 		
 		if (!chbEnabled.isSelected()) {
@@ -98,6 +100,7 @@ public class InstrumentRenderer extends ObjectInstrument<Element.Output<F1<Resou
 		if (future == null) {
 			future = UtilsGL.submitTask(this::fetch);
 		}
+		profilerUpdate.exit();
 	}
 	
 	

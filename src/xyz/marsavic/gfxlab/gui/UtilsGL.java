@@ -160,7 +160,7 @@ public class UtilsGL {
 	
 	public static void submitTaskAndWait(A0 a) {
 		Future<?> future = submitTask(a);
-		while (true) {
+		while (true) { // TODO What to do on exception?
 			try {
 				future.get();
 				break;
@@ -171,13 +171,22 @@ public class UtilsGL {
 	}
 	
 	
+	public static <T> T futureGet(Future<T> future) {
+		try {
+			return future.get();
+		} catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
 	public static final int parallelism;
 	
 	
 	static {
 //		int p = ForkJoinPool.getCommonPoolParallelism();
-		int p = (ForkJoinPool.getCommonPoolParallelism() + 1) / 2;
-//		int p = 7;
+//		int p = (ForkJoinPool.getCommonPoolParallelism() + 1) / 2;
+		int p = 4;
 		
 		// 5 0.485
 		// 6 0.380

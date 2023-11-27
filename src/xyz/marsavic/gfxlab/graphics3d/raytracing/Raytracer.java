@@ -4,6 +4,7 @@ import xyz.marsavic.geometry.Vector;
 import xyz.marsavic.gfxlab.Color;
 import xyz.marsavic.gfxlab.ColorFunctionT;
 import xyz.marsavic.gfxlab.Vec3;
+import xyz.marsavic.gfxlab.graphics3d.Camera;
 import xyz.marsavic.gfxlab.graphics3d.Ray;
 import xyz.marsavic.gfxlab.graphics3d.Scene;
 
@@ -11,10 +12,12 @@ import xyz.marsavic.gfxlab.graphics3d.Scene;
 public abstract class Raytracer implements ColorFunctionT {
 	
 	protected final Scene scene;
+	private final Camera camera;
 	
 	
-	public Raytracer(Scene scene) {
+	public Raytracer(Scene scene, Camera camera) {
 		this.scene = scene;
+		this.camera = camera;
 	}
 	
 	
@@ -23,8 +26,7 @@ public abstract class Raytracer implements ColorFunctionT {
 	
 	@Override
 	public Color at(double t, Vector p) {
-		Ray ray = Ray.pd(Vec3.ZERO, Vec3.zp(1, p));
-		return sample(ray);
+		return sample(camera.exitingRay(p));
 	}
 	
 }
