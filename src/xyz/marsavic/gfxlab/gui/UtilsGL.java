@@ -185,8 +185,8 @@ public class UtilsGL {
 	
 	static {
 //		int p = ForkJoinPool.getCommonPoolParallelism();
-//		int p = (ForkJoinPool.getCommonPoolParallelism() + 1) / 2;
-		int p = 4;
+		int p = (ForkJoinPool.getCommonPoolParallelism() + 1) / 2;
+//		int p = 2;
 		
 		// 5 0.485
 		// 6 0.380

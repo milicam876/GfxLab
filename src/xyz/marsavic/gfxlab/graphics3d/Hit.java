@@ -1,5 +1,6 @@
 package xyz.marsavic.gfxlab.graphics3d;
 
+import xyz.marsavic.functions.F1;
 import xyz.marsavic.geometry.Vector;
 import xyz.marsavic.gfxlab.Vec3;
 
@@ -30,6 +31,16 @@ public interface Hit {
 			@Override public double   t       () { return Hit.this.t(); }
 			@Override public Vec3     n       () { return n; }
 			@Override public Material material() { return Hit.this.material(); }
+			@Override public Vector   uv      () { return Hit.this.uv(); }
+		};
+	}
+	
+	default Hit withMaterial(Material material) {
+		return new Hit() {
+			@Override public double   t       () { return Hit.this.t(); }
+			@Override public Vec3     n       () { return Hit.this.n(); }
+			@Override public Vec3     n_      () { return Hit.this.n_(); }
+			@Override public Material material() { return material; }
 			@Override public Vector   uv      () { return Hit.this.uv(); }
 		};
 	}

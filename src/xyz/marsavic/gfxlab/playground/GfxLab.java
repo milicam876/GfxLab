@@ -35,13 +35,12 @@ public class GfxLab {
 						new EAggregator(
 								e(Fs::transformedColorFunction,
 										e(RaytracerSimple::new,
-												e(MirrorBalls::new, e(3)),
-//												e(DiscoRoom::new, e(16), e(16), e(234837278529875L)),
+												e(GoldTrinket::new),
 												e(TransformedCamera::new,
 													e(Perspective::new, e(0.5)),
 													e(Affine.IDENTITY
 															.then(Affine.translation(Vec3.xyz(0, 0, -3)))
-															.then(Affine.rotationAboutY(0.04))
+//															.then(Affine.rotationAboutY(0.04))
 													)
 												)
 										),

@@ -58,7 +58,7 @@ public class RaytracerSimple extends Raytracer {
 				lightDiffuse = lightDiffuse.add(irradiance);
 				
 				double cosLR = l.dot(r_);
-				if (cosLR > 0) {                  // If the angle between l and r is acute
+				if (cosLR > 0) {                   // If the angle between l and r is acute
 					cosLR /= lL;
 					lightSpecular = lightSpecular.add(irradiance.mul(Math.pow(cosLR, material.shininess())));
 				}
@@ -72,6 +72,12 @@ public class RaytracerSimple extends Raytracer {
 		if (material.reflective().notZero()) {   // When material has reflective properties we recursively find the color visible along the ray (p, r).
 			Color lightReflected = sample(Ray.pd(p, r_), depthRemaining - 1);
 			result = result.add(material.reflective().mul(lightReflected));
+		}
+		
+		if (material.refractive().notZero()) {   // When material has refractive properties we recursively find the color visible along the ray (p, f).
+			Vec3 f = GeometryUtils.refractedNN(n_, i_, material.refractiveIndex());
+			Color lightRefracted = sample(Ray.pd(p, f), depthRemaining - 1);
+			result = result.add(lightRefracted).mul(material.refractive());
 		}
 		
 		return result;

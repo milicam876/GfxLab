@@ -3,7 +3,6 @@ package xyz.marsavic.gfxlab.graphics3d.raytracing;
 import xyz.marsavic.geometry.Vector;
 import xyz.marsavic.gfxlab.Color;
 import xyz.marsavic.gfxlab.ColorFunctionT;
-import xyz.marsavic.gfxlab.Vec3;
 import xyz.marsavic.gfxlab.graphics3d.Camera;
 import xyz.marsavic.gfxlab.graphics3d.Ray;
 import xyz.marsavic.gfxlab.graphics3d.Scene;
