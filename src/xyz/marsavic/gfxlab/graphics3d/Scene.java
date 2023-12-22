@@ -21,7 +21,7 @@ public interface Scene {
 		
 		protected Solid solid;
 		protected final List<Light> lights = new ArrayList<>();
-		protected final Color colorBackground = Color.BLACK;
+		protected Color colorBackground = Color.BLACK;
 		
 		@Override
 		public Solid solid() {

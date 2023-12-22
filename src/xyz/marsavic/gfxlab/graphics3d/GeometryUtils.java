@@ -2,6 +2,7 @@ package xyz.marsavic.gfxlab.graphics3d;
 
 
 import xyz.marsavic.gfxlab.Vec3;
+import xyz.marsavic.random.sampling.Sampler;
 
 
 public class GeometryUtils {
@@ -33,6 +34,23 @@ public class GeometryUtils {
 		return c2Sqr > 0 ?
 				n_.mul(c1 - Math.sqrt(c2Sqr) * ri).sub(i_) :    // refraction
 				reflectedN(n_, i_);                             // total reflection
+	}
+	
+	
+	
+	public static Vec3 sampleHemisphereCosineDistributedRejectionN(Sampler sampler, Vec3 n_) {
+		// Sample the sphere with radius 1, add n_
+		double x, y, z, lVSqr;
+		
+		do {
+			x = 2 * sampler.uniform() - 1;
+			y = 2 * sampler.uniform() - 1;
+			z = 2 * sampler.uniform() - 1;
+			lVSqr = x*x + y*y + z*z;
+		} while (lVSqr > 1);
+		
+		double c = 1 / Math.sqrt(lVSqr);
+		return Vec3.xyz(x * c, y * c, z * c).add(n_);
 	}
 	
 }

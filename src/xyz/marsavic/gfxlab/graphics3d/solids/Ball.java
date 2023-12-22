@@ -86,10 +86,10 @@ public class Ball implements Solid {
 		
 		@Override
 		public Vector uv() {
-			Vec3 p = ray().at(t());
+			Vec3 n = n();
 			return Vector.xy(
-					Numeric.atan2T(p.x(), p.z()),
-					4 * Numeric.asinT(p.y() / Ball.this.r)
+					Numeric.atan2T(n.z(), n.x()),
+					4 * Numeric.asinT(n.y() / r)
 			);
 		}
 		
