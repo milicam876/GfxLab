@@ -6,7 +6,9 @@ import xyz.marsavic.gfxlab.Vec3;
 import xyz.marsavic.gfxlab.graphics3d.*;
 
 
-public class HalfSpace implements Solid {
+public class HalfSpace extends Solid {
+
+	//TODO: Bounding box ovog cuda?
 	
 	private final Vec3 p; // A point on the boundary plane
 	private final Vec3 e; // A vector parallel to the boundary plane.
@@ -101,8 +103,13 @@ public class HalfSpace implements Solid {
 		double t = l / o;
 		return (t > afterTime) ? new HitHalfSpace(ray, t) : Hit.AtInfinity.axisAligned(ray.d(), l > 0);
 	}
-	
-	
+
+	//@Override
+	public boolean intersects(BoundingBox boundingBox) {
+		return false;
+	}
+
+
 	@Override
 	public String toString() {
 		return "HalfSpace{" +

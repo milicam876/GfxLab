@@ -45,7 +45,10 @@ public class ChristmasTree extends Scene.Base {
 		Collection<Solid> solids = new ArrayList<>();
 		
 		solids.add(HalfSpace.pn(Vec3.xyz(0, -2, 0), Vec3.xyz(0, 1, 0), Material.matte(Color.hsb(0.83, 0.4, 0.7))));
-		
+
+		//solids.add(HalfSpace.pn(Vec3.xyz(0,0,-4), Vec3.xyz(0,0,1), Material.matte(Color.WHITE).emittance(Color.WHITE)));
+
+
 		int n = 56;
 		double r = 10;
 		double h = 20;

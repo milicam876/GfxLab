@@ -1,10 +1,12 @@
 package xyz.marsavic.gfxlab;
 
+import xyz.marsavic.gfxlab.graphics3d.BoundingBox;
 import xyz.marsavic.gfxlab.graphics3d.solids.Box;
 
 
 public interface BoxedObjectFactory<T> {
 
+	T bb(BoundingBox bb);
 	T b(Box b);
 	T pd(Vec3 p, Vec3 d);
 	T pq(Vec3 p, Vec3 q);
@@ -16,9 +18,18 @@ public interface BoxedObjectFactory<T> {
 	
 	
 	Vec3 E_2 = Vec3.EXYZ.div(2);
-	
-	
+
+	interface BB<T> extends BoxedObjectFactory<T> {
+		@Override default T b(Box b) {return bb(BoundingBox.$.b(b)); }
+		@Override default T pd(Vec3 p, Vec3 d) { return bb(BoundingBox.$.pd(p, d)); }
+		@Override default T pq(Vec3 p, Vec3 q) { return bb(BoundingBox.$.pq(p, q)); }
+		@Override default T cr(Vec3 c, Vec3 r) { return bb(BoundingBox.$.cr(c, r)); }
+		@Override default T r(Vec3 r) { return bb(BoundingBox.$.r(r)); }
+		@Override default T e() { return bb(BoundingBox.$.e()); }
+	}
+
 	interface B<T> extends BoxedObjectFactory<T> {
+		@Override default T bb(BoundingBox bb) {return b(Box.$.bb(bb)); }
 		@Override default T pd(Vec3 p, Vec3 d) { return b(Box.$.pd(p, d)); }
 		@Override default T pq(Vec3 p, Vec3 q) { return b(Box.$.pq(p, q)); }
 		@Override default T cr(Vec3 c, Vec3 r) { return b(Box.$.cr(c, r)); }
@@ -28,6 +39,7 @@ public interface BoxedObjectFactory<T> {
 	
 	interface CR<T> extends BoxedObjectFactory<T> {
 		@Override default T b(Box b) { return cr(b.c(), b.r()); }
+		@Override default T bb(BoundingBox bb) {return cr(bb.c(), bb.r()); }
 		@Override default T pd(Vec3 p, Vec3 d) { Vec3 r = d.div(2); return cr(p.add(r), r); }
 		@Override default T pq(Vec3 p, Vec3 q) { return cr(p.add(q).div(2), q.sub(p).div(2)); }
 		@Override default T r(Vec3 r) { return cr(Vec3.ZERO, r); }
@@ -36,6 +48,7 @@ public interface BoxedObjectFactory<T> {
 	
 	interface PQ<T> extends BoxedObjectFactory<T> {
 		@Override default T b(Box b) { return pq(b.p(), b.q()); }
+		@Override default T bb(BoundingBox bb) {return cr(bb.p(), bb.q()); }
 		@Override default T pd(Vec3 p, Vec3 d) { return pq(p, p.add(d)); }
 		@Override default T cr(Vec3 c, Vec3 r) { return pq(c.sub(r), c.add(r)); }
 		@Override default T r(Vec3 r) { return pq(r.inverse(), r); }
@@ -44,6 +57,7 @@ public interface BoxedObjectFactory<T> {
 	
 	interface PD<T> extends BoxedObjectFactory<T> {
 		@Override default T b(Box b) { return pd(b.p(), b.d()); }
+		@Override default T bb(BoundingBox bb) {return cr(bb.p(), bb.d()); }
 		@Override default T pq(Vec3 p, Vec3 q) { return pd(p, q.sub(p)); }
 		@Override default T cr(Vec3 c, Vec3 r) { return pd(c.sub(r), r.mul(2)); }
 		@Override default T r(Vec3 r) { return pd(r.inverse(), r.mul(2)); }

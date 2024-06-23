@@ -2,15 +2,13 @@ package xyz.marsavic.gfxlab.graphics3d.solids;
 
 import xyz.marsavic.functions.F1;
 import xyz.marsavic.geometry.Vector;
+import xyz.marsavic.gfxlab.Transformation;
 import xyz.marsavic.gfxlab.Vec3;
-import xyz.marsavic.gfxlab.graphics3d.Hit;
-import xyz.marsavic.gfxlab.graphics3d.Material;
-import xyz.marsavic.gfxlab.graphics3d.Ray;
-import xyz.marsavic.gfxlab.graphics3d.Solid;
+import xyz.marsavic.gfxlab.graphics3d.*;
 import xyz.marsavic.utils.Numeric;
 
 
-public class Ball implements Solid {
+public class Ball extends Solid {
 	
 	private final Vec3 c;
 	private final double r;
@@ -28,6 +26,7 @@ public class Ball implements Solid {
 		this.mapMaterial = mapMaterial;
 		rSqr = r * r;
 		inverted = r < 0;
+		this.boundingBox = BoundingBox.$.cr(c, Vec3.xyz(r,r,r));
 	}
 	
 	
@@ -50,8 +49,7 @@ public class Ball implements Solid {
 	}
 	
 	
-	
-	@Override
+
 	public Hit firstHit(Ray ray, double afterTime) {
 		Vec3 e = c().sub(ray.p());                                // Vector from the ray origin to the ball center
 		
@@ -66,8 +64,68 @@ public class Ball implements Solid {
 		}
 		return Hit.AtInfinity.axisAligned(ray.d(), inverted);
 	}
-	
-	
+
+	public boolean intersects(BoundingBox boundingBox) {
+		//transliramo se u prvi oktant
+		Vec3 bq = boundingBox.r();
+		Vec3 c = this.c().sub(boundingBox.c()).abs();
+
+		double cDistanceSq;
+
+		if(c.x() <= bq.x() && c.y() <= bq.y() && c.z() <= bq.z()){
+			return true;
+		}
+		else if(c.x() <= bq.x()){
+			if (c.y() <= bq.y()){
+				cDistanceSq = c.z()-bq.z();
+				cDistanceSq *= cDistanceSq;
+			}
+			else if (c.z() <= bq.z()){
+				cDistanceSq = c.y()-bq.y();
+				cDistanceSq *= cDistanceSq;
+			}
+			else {
+				double d1 = c.z()-bq.z();
+				double d2 = c.y()-bq.y();
+				d1 *= d1;
+				d2 *= d2;
+				cDistanceSq = d1+d2;
+			}
+		}
+		else if (c.y() <= bq.y()){
+			if (c.z() <= bq.z()){
+				cDistanceSq = c.x()-bq.x();
+				cDistanceSq *= cDistanceSq;
+			}
+			else {
+				double d1 = c.z()-bq.z();
+				double d2 = c.x()-bq.x();
+				d1 *= d1;
+				d2 *= d2;
+				cDistanceSq = d1+d2;
+			}
+		}
+		else if (c.z() <= bq.z()) {
+			double d1 = c.y()-bq.y();
+			double d2 = c.x()-bq.x();
+			d1 *= d1;
+			d2 *= d2;
+			cDistanceSq = d1+d2;
+		}
+		else {
+			double d1 = c.x()-bq.x();
+			double d2 = c.y()-bq.y();
+			double d3 = c.z()-bq.z();
+			d1 *= d1;
+			d2 *= d2;
+			d3 *= d3;
+			cDistanceSq = d1 + d2 + d3;
+		} //prodje mi mladost dok sam napisala sve slucajeve
+
+		return cDistanceSq < r*r;
+	}
+
+
 	class HitBall extends Hit.RayT {
 		
 		protected HitBall(Ray ray, double t) {

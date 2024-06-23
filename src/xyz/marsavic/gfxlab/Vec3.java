@@ -28,7 +28,9 @@ public class Vec3 {
 	public static final Vec3 P201 = xyz(2, 0, 1);
 	public static final Vec3 P210 = xyz(2, 1, 0);
 	public static final Vec3[] PERMUTATIONS = {P012, P021, P102, P120, P201, P210};
-	
+
+	public static final Vec3 INFTY = xyz(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+
 	private final double x, y, z;
 	
 	
@@ -68,8 +70,15 @@ public class Vec3 {
 	public static Vec3 zp(double z, Vector p) {
 		return xyz(p.x(), p.y(), z);
 	}
+
 	
-	
+	public static Vec3 xr(double x, Vec3 r) { return xyz(x, r.y(), r.z()); }
+
+
+	public static Vec3 yr(double y, Vec3 r) { return xyz(r.x(), y, r.z()); }
+
+
+	public static Vec3 zr(double z, Vec3 r) { return xyz(r.x(), r.y(), z); }
 	
 	
 	public double x() {
@@ -85,8 +94,8 @@ public class Vec3 {
 	public double z() {
 		return z;
 	}
-	
-	
+
+
 	public double get(int i) {
 		return switch (i) {
 			case 0 -> x();

@@ -6,7 +6,6 @@ import xyz.marsavic.gfxlab.*;
 import xyz.marsavic.gfxlab.aggregation.EAggregator;
 import xyz.marsavic.gfxlab.graphics3d.Affine;
 import xyz.marsavic.gfxlab.graphics3d.cameras.Perspective;
-import xyz.marsavic.gfxlab.graphics3d.cameras.ThinLensFOV;
 import xyz.marsavic.gfxlab.graphics3d.cameras.TransformedCamera;
 import xyz.marsavic.gfxlab.graphics3d.raytracing.Pathtracer;
 import xyz.marsavic.gfxlab.graphics3d.raytracing.RaytracerSimple;
@@ -44,14 +43,13 @@ public class GfxLab {
 												)
 										),
 */
-										e(Pathtracer::new,
-												e(ChristmasTree::new),
+										e(RaytracerSimple::new,
+												e(DiscoRoom::new, e(40), e(40)),
 												e(TransformedCamera::new,
-													e(Perspective::new, e(0.5)),
-													e(Affine.IDENTITY
-															.then(Affine.rotationAboutX(0))
-															.then(Affine.translation(Vec3.xyz(0, 8, -28)))
-													)
+														e(Perspective::fov, e(1.0/6)),
+														e(Affine.IDENTITY
+																.then(Affine.translation(Vec3.xyz(0,0,-3)))
+														)
 												)
 										),
 										e(TransformationsFromSize.toGeometric, eSize)
@@ -65,8 +63,7 @@ public class GfxLab {
 						)
 				);
 	}
-	
-	
+
 }
 
 

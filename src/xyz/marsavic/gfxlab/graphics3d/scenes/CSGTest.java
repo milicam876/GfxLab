@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import static xyz.marsavic.gfxlab.graphics3d.Solid.*;
+
 
 public class CSGTest extends Scene.Base {
 	
