@@ -6,13 +6,11 @@ import xyz.marsavic.gfxlab.graphics3d.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.function.DoubleUnaryOperator;
 
-/*TODO:
-    - intersection metod za Halfspace? -- msm da cemo samo da zabranimo beskonacne solide u grupi
- */
 
-public class MyGroup extends Solid {
+public class MyGroupWithSAH extends Solid {
 
     private static final int THRESHOLD_NUM = 1;
     private double THRESHOLD_SIZE = 0.01;
@@ -22,60 +20,96 @@ public class MyGroup extends Solid {
     protected class Node {
 
         /**
-         * svaki box koji ima vise od treshold broja objekata i stranica mu je veca od treshold duzine
-         * delimo na 8 jednakih boxova
+         * kada treba da delimo, prodjemo kroz sve trenutne solide i uzmemo centre
+         * centri po svakoj osi su nam potencijalne splitting planes
+         * trazimo minimum SAH po njima
+         * proverimo dodatno da li je novi SAH manji od SAH na prethodnom nivou, ako nije prekidamo
          *
-         * prvi nivo po x, drugi po y, treci po z
-         * uvek manje vrednosti levo, vece desno
-         *
-         * za svaki novi box pamtimo novi boundingBox i solide koji ga seku
-         *
-         * na svakom kockastom nivou, proverimo tresholde, i rekurzivno delimo, kad vise ne delimo, proglasimo to listom
+         * na svakom nivou, proverimo tresholde, i rekurzivno delimo
          *
          * svaki solid vraca svoj bounding box
          */
+
 
         protected BoundingBox boundingBox;
 
         protected Solid[] solids; // solidi koji seku dati cvor
         protected Node left, right; // levo i desno dete
-        protected Axis axis; // X (pocetni bb - kocka), Y, Z
-        protected double splittingPlane; // mesto slPl na odgovarajucoj osi (axis)
+        protected double sah;
+        protected SplittingPlane splittingPlane;
+        protected HashSet<SplittingPlane> parentSplPlanes;
 
-        public Node(BoundingBox boundingBox, Solid[] solids, Axis axis){
+        public Node(BoundingBox boundingBox, Solid[] solids, HashSet<SplittingPlane> parentSplPl){
             //konstruktor - uzima prosldjene vrednosti i poziva rekurzivno pravljenje dece
             this.boundingBox = boundingBox;
             this.solids = solids;
-            this.axis = axis;
-            if (axis != Axis.X || (solids.length > THRESHOLD_NUM && boundingBox.r().lengthSquared() > THRESHOLD_SIZE)){
+            this.parentSplPlanes = parentSplPl;
+            this.sah = Double.POSITIVE_INFINITY;
+            if (solids.length > THRESHOLD_NUM && boundingBox.r().lengthSquared() > THRESHOLD_SIZE){
                 split(); //napravi spliting plane i decu
             }
         }
 
         private void split(){
-            splittingPlane = boundingBox.c().get(this.axis.index());
-            createNode(-1);//left
-            createNode(1);//right
+            int minAxis = 0;
+            Double minPos = 0.0;
+            Double minSAH = Double.POSITIVE_INFINITY;
+
+            for(Solid solid : solids){
+                Vec3 c = solid.boundingBox().c();//za svaki solid nadjemo centar
+                for (int i =0; i < 3; i++){//za svaku osu, racunamo sah i trazimo minimum po njima
+                    Double pos = c.get(i);
+                    //ovo je da se ne ponovi dva put ista :)
+                    if (parentSplPlanes.contains(SplittingPlane.pa(pos, Axis.values()[i]))) continue;
+                    Double sah = computeSAH(i, pos);
+                    if (sah < minSAH){
+                        minAxis = i;
+                        minPos = pos;
+                        minSAH = sah;
+                    }
+                }
+            }
+
+            if (minSAH >= this.sah) return;
+
+            this.splittingPlane = SplittingPlane.pa(minPos, Axis.values()[minAxis]);
+            this.sah = minSAH;
+//            System.out.println(splittingPlane);
+//            System.out.println(parentSplPlanes);
+//            System.out.println(minSAH + " " + sah);
+
+            createNodes();
         }
 
-        private void createNode(int mul){
-            Axis axis = this.axis.next();
-            int a = this.axis.index();
-            Vec3 c = Vec3.f(DoubleUnaryOperator.identity(), this.boundingBox.c());
-            Vec3 r = Vec3.f(DoubleUnaryOperator.identity(), this.boundingBox.r());
+        private Double computeSAH(int axis, Double pos) {
+            BoundingBox leftbb  = BoundingBox.$.pq(boundingBox.p(), Vec3.set(axis, pos, boundingBox.q()));
+            BoundingBox rightbb = BoundingBox.$.pq(Vec3.set(axis, pos, boundingBox.p()), boundingBox.q());
 
-            r = Vec3.set(a, r.get(a)/2, r);
-            c = Vec3.set(a, c.get(a)+mul*r.get(a), c);
+            int leftCount  = 0;
+            int rightCount = 0;
 
-            BoundingBox bb = BoundingBox.$.cr(c, r);
-            Solid[] solids;
+            for (Solid solid : solids){
+                if (solid.intersects(leftbb )) leftCount++;
+                if (solid.intersects(rightbb)) rightCount++;
+            }
 
-            //if (axis!=Axis.X) solids = Arrays.copyOf(this.solids, this.solids.length);
-            solids = filterSolids(this.solids, bb);
-            //System.out.println(bb + " " + solids.length);
+            double sah = leftCount * leftbb.area() + rightCount * rightbb.area();
 
-            if (mul == -1){ left = new Node(bb, solids, axis); }
-            else { right = new Node(bb, solids, axis); }
+            return sah;
+        }
+
+        private void createNodes(){
+            BoundingBox leftbb  = BoundingBox.$.pq(boundingBox.p(), Vec3.set(splittingPlane.axis().index(), splittingPlane.pos(), boundingBox.q()));
+            BoundingBox rightbb = BoundingBox.$.pq(Vec3.set(splittingPlane.axis().index(), splittingPlane.pos(), boundingBox.p()), boundingBox.q());
+
+            Solid[] leftSolids  = filterSolids(this.solids, leftbb);
+            Solid[] rightSolids = filterSolids(this.solids, rightbb);
+
+            HashSet<SplittingPlane> parentSplPlanes = (HashSet<SplittingPlane>) this.parentSplPlanes.clone();
+            parentSplPlanes.add(this.splittingPlane);
+
+            left  = new Node(leftbb, leftSolids, parentSplPlanes);
+            right = new Node(rightbb, rightSolids, parentSplPlanes);
         }
 
 
@@ -96,10 +130,10 @@ public class MyGroup extends Solid {
 
     }
 
-    private MyGroup(Solid[] solids) {
+    private MyGroupWithSAH(Solid[] solids) {
         this.boundingBox = boundingBox(solids);
         this.THRESHOLD_SIZE = boundingBox.r().lengthSquared()/16;
-        this.root = new Node(boundingBox, solids, Axis.X);
+        this.root = new Node(boundingBox, solids, new HashSet<SplittingPlane>());
         //System.out.println(root.boundingBox);
         //ispisi(root);
     }
@@ -130,12 +164,12 @@ public class MyGroup extends Solid {
         return BoundingBox.$.pq(min, max);
     }
 
-    public static MyGroup of(Solid... solids) {
-        return new MyGroup(solids);
+    public static MyGroupWithSAH of(Solid... solids) {
+        return new MyGroupWithSAH(solids);
     }
 
-    public static MyGroup of(Collection<Solid> solids) {
-        return new MyGroup(solids.toArray(Solid[]::new));
+    public static MyGroupWithSAH of(Collection<Solid> solids) {
+        return new MyGroupWithSAH(solids.toArray(Solid[]::new));
     }
 
     /**
@@ -194,14 +228,14 @@ public class MyGroup extends Solid {
 //        return hit1.t() < hit2.t() ? hit1 : hit2;
 
         // klasifikuj near i far
-        int a = node.axis.index();
+        int a = node.splittingPlane.axis().index();
         Node near, far;
 
-        if(node.splittingPlane > ray.p().get(a)) { near = node.left; far  = node.right; }
+        if(node.splittingPlane.pos() > ray.p().get(a)) { near = node.left; far  = node.right; }
         else                                     { near = node.right; far  = node.left; }
 
         // u zavisnosti od slucaja ispitaj samo near, samo far ili near pa far rekurzivno
-        double t = (node.splittingPlane - ray.p().get(a)) / ray.d().get(a);
+        double t = (node.splittingPlane.pos() - ray.p().get(a)) / ray.d().get(a);
 
         if(t > exitTime || t < 0) { return findHit(near, ray, afterTime, entryTime, exitTime); }
         else if(t <= entryTime)   { return findHit(far , ray, afterTime, entryTime, exitTime); }

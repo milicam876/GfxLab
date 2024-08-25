@@ -67,60 +67,10 @@ public class Ball extends Solid {
 
 	public boolean intersects(BoundingBox boundingBox) {
 		//transliramo se u prvi oktant
-		Vec3 bq = boundingBox.r();
+		Vec3 bq = boundingBox.r().abs();
 		Vec3 c = this.c().sub(boundingBox.c()).abs();
 
-		double cDistanceSq;
-
-		if(c.x() <= bq.x() && c.y() <= bq.y() && c.z() <= bq.z()){
-			return true;
-		}
-		else if(c.x() <= bq.x()){
-			if (c.y() <= bq.y()){
-				cDistanceSq = c.z()-bq.z();
-				cDistanceSq *= cDistanceSq;
-			}
-			else if (c.z() <= bq.z()){
-				cDistanceSq = c.y()-bq.y();
-				cDistanceSq *= cDistanceSq;
-			}
-			else {
-				double d1 = c.z()-bq.z();
-				double d2 = c.y()-bq.y();
-				d1 *= d1;
-				d2 *= d2;
-				cDistanceSq = d1+d2;
-			}
-		}
-		else if (c.y() <= bq.y()){
-			if (c.z() <= bq.z()){
-				cDistanceSq = c.x()-bq.x();
-				cDistanceSq *= cDistanceSq;
-			}
-			else {
-				double d1 = c.z()-bq.z();
-				double d2 = c.x()-bq.x();
-				d1 *= d1;
-				d2 *= d2;
-				cDistanceSq = d1+d2;
-			}
-		}
-		else if (c.z() <= bq.z()) {
-			double d1 = c.y()-bq.y();
-			double d2 = c.x()-bq.x();
-			d1 *= d1;
-			d2 *= d2;
-			cDistanceSq = d1+d2;
-		}
-		else {
-			double d1 = c.x()-bq.x();
-			double d2 = c.y()-bq.y();
-			double d3 = c.z()-bq.z();
-			d1 *= d1;
-			d2 *= d2;
-			d3 *= d3;
-			cDistanceSq = d1 + d2 + d3;
-		} //prodje mi mladost dok sam napisala sve slucajeve
+		double cDistanceSq = Vec3.max(c.sub(bq), Vec3.ZERO).lengthSquared();
 
 		return cDistanceSq < r*r;
 	}

@@ -44,7 +44,7 @@ public class GfxLab {
 										),
 */
 										e(RaytracerSimple::new,
-												e(DiscoRoom::new, e(40), e(40)),
+												e(DiscoRoom::new, e(500), e(500)),
 												e(TransformedCamera::new,
 														e(Perspective::fov, e(1.0/6)),
 														e(Affine.IDENTITY

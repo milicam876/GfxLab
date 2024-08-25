@@ -52,6 +52,10 @@ public class BoundingBox {
         return Double.NaN;
     }
 
+    public double area(){
+        return d().x()*d().x() + d().y()*d().y() + d().z()*d().z();
+    }
+
     @Override
     public String toString() {
         return c + ", " + r;
