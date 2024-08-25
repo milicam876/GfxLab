@@ -79,8 +79,11 @@ public class Vec3 {
 
 
 	public static Vec3 zr(double z, Vec3 r) { return xyz(r.x(), r.y(), z); }
-	
-	
+
+
+	public static Vec3 c(double c) { return xyz(c, c, c); }
+
+
 	public double x() {
 		return x;
 	}
@@ -104,7 +107,15 @@ public class Vec3 {
 			default -> throw new IllegalArgumentException();
 		};
 	}
-	
+
+	public static Vec3 set(int i, double d, Vec3 v) {
+		return switch (i) {
+			case 0 -> xr(d, v);
+			case 1 -> yr(d, v);
+			case 2 -> zr(d, v);
+			default -> throw new IllegalArgumentException();
+		};
+	}
 	
 	public double[] toArray() {
 		return new double[] { x(), y(), z() };
@@ -466,7 +477,7 @@ public class Vec3 {
 		return v0.mul(1 - t).add(v1.mul(t));
 	}
 
-	
+
 	public static Vec3 random(RNG rng) {
 		return Vec3.xyz(rng.nextDouble(), rng.nextDouble(), rng.nextDouble());
 	}

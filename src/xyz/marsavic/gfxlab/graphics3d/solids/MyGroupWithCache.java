@@ -8,11 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.DoubleUnaryOperator;
 
-/*TODO:
-    - intersection metod za Halfspace? -- msm da cemo samo da zabranimo beskonacne solide u grupi
- */
-
-public class MyGroup extends Solid {
+public class MyGroupWithCache extends Solid {
 
     private static final int THRESHOLD_NUM = 1;
     private double THRESHOLD_SIZE = 0.01;
@@ -28,7 +24,7 @@ public class MyGroup extends Solid {
          * prvi nivo po x, drugi po y, treci po z
          * uvek manje vrednosti levo, vece desno
          *
-         * za svaki novi box pamtimo novi boundingBox i solide koji ga seku
+         * za svaki novi box pamtimo novu sirinu, duplo manju po odg osi, i novi centar odgovarajuci
          *
          * na svakom kockastom nivou, proverimo tresholde, i rekurzivno delimo, kad vise ne delimo, proglasimo to listom
          *
@@ -96,7 +92,7 @@ public class MyGroup extends Solid {
 
     }
 
-    private MyGroup(Solid[] solids) {
+    private MyGroupWithCache(Solid[] solids) {
         this.boundingBox = boundingBox(solids);
         this.THRESHOLD_SIZE = boundingBox.r().lengthSquared()/16;
         this.root = new Node(boundingBox, solids, Axis.X);
@@ -130,12 +126,12 @@ public class MyGroup extends Solid {
         return BoundingBox.$.pq(min, max);
     }
 
-    public static MyGroup of(Solid... solids) {
-        return new MyGroup(solids);
+    public static MyGroupWithCache of(Solid... solids) {
+        return new MyGroupWithCache(solids);
     }
 
-    public static MyGroup of(Collection<Solid> solids) {
-        return new MyGroup(solids.toArray(Solid[]::new));
+    public static MyGroupWithCache of(Collection<Solid> solids) {
+        return new MyGroupWithCache(solids.toArray(Solid[]::new));
     }
 
     /**
@@ -165,10 +161,10 @@ public class MyGroup extends Solid {
 
         HashMap<Solid, Hit> cache = new HashMap<Solid, Hit>();
 
-        return findHit(root, ray, afterTime, entryTime, exitTime);
+        return findHit(root, ray, afterTime, entryTime, exitTime, cache);
     }
 
-    private Hit findHit(Node node, Ray ray, double afterTime, double entryTime, double exitTime){
+    private Hit findHit(Node node, Ray ray, double afterTime, double entryTime, double exitTime, HashMap<Solid, Hit> cache){
 
         //ako je leaf, provera hitova
         if(node.isLeaf()){
@@ -176,7 +172,12 @@ public class MyGroup extends Solid {
             double minT = minHit.t();
 
             for (Solid solid : node.solids) {
-                Hit hit = solid.firstHit(ray, afterTime);
+                Hit hit;
+                if (cache.containsKey(solid)) hit = cache.get(solid);
+                else {
+                    hit = solid.firstHit(ray, afterTime);
+                    cache.put(solid, hit);
+                }
 
                 double t = hit.t();
                 if (t >= entryTime && t <= exitTime && t < minT) {
@@ -203,12 +204,12 @@ public class MyGroup extends Solid {
         // u zavisnosti od slucaja ispitaj samo near, samo far ili near pa far rekurzivno
         double t = (node.splittingPlane - ray.p().get(a)) / ray.d().get(a);
 
-        if(t > exitTime || t < 0) { return findHit(near, ray, afterTime, entryTime, exitTime); }
-        else if(t <= entryTime)   { return findHit(far , ray, afterTime, entryTime, exitTime); }
+        if(t > exitTime || t < 0) { return findHit(near, ray, afterTime, entryTime, exitTime, cache); }
+        else if(t <= entryTime)   { return findHit(far , ray, afterTime, entryTime, exitTime, cache); }
         else{
-            Hit hit = findHit(near, ray, afterTime, entryTime, t);
+            Hit hit = findHit(near, ray, afterTime, entryTime, t, cache);
             if(hit.getClass() != Hit.AtInfinity.class) return hit; //nzm je l ovo moze ovako da se proveri
-            return findHit(far, ray, afterTime, t, exitTime);
+            return findHit(far, ray, afterTime, t, exitTime, cache);
         }
     }
 
